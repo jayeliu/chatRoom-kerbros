@@ -2,5 +2,5 @@
 res/.DS_Store
 src/.DS_Store
 out/
-/.idea/
+.idea/
 *.iml
