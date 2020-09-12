@@ -1,5 +1,6 @@
 package client;
 
+
 import ChatUI.User;
 
 import java.awt.BorderLayout;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 import java.util.StringTokenizer;
 
-
+ 
 
 import javax.swing.DefaultListModel;
 
@@ -61,268 +62,268 @@ import javax.swing.JTextField;
 
 import javax.swing.border.TitledBorder;
 
+ 
 
+public class ChatRoomUI{
 
-public class ChatRoomUI {
+ 
 
+	private JFrame frame;
 
+	private JList userList;
 
-    private JFrame frame;
+	private JTextArea textArea;
 
-    private JList userList;
+	private JTextField textField;
 
-    private JTextArea textArea;
+	private JTextField txt_port;
 
-    private JTextField textField;
+	private JTextField txt_hostIp;
 
-    private JTextField txt_port;
+	private JTextField txt_name;
 
-    private JTextField txt_hostIp;
+	private JButton btn_start;
 
-    private JTextField txt_name;
+	private JButton btn_stop;
 
-    private JButton btn_start;
+	private JButton btn_send;
 
-    private JButton btn_stop;
+	private JPanel northPanel;
 
-    private JButton btn_send;
+	private JPanel southPanel;
 
-    private JPanel northPanel;
+	private JScrollPane rightScroll;
 
-    private JPanel southPanel;
+	private JScrollPane leftScroll;
 
-    private JScrollPane rightScroll;
+	private JSplitPane centerSplit;
 
-    private JScrollPane leftScroll;
+ 
 
-    private JSplitPane centerSplit;
+	private DefaultListModel listModel;
 
+	private boolean isConnected = false;
 
+ 
+	private String user_id;
+	
+	private Socket socket;
 
-    private DefaultListModel listModel;
+	private PrintWriter writer;
 
-    private boolean isConnected = false;
+	private BufferedReader reader;
 
+	private MessageThread messageThread;// 负责接收消息的线程
 
-    private String user_id;
+	private Map<String, User> onLineUsers = new HashMap<String, User>();// 所有在线用户
 
-    private Socket socket;
+ 
 
-    private PrintWriter writer;
+	// 主方法,程序入口
 
-    private BufferedReader reader;
+	public static void main(String[] args) throws UnknownHostException, IOException {
+		int port=6666;
+		String hostIp="127.0.0.1";
+		Socket socket1 = new Socket(hostIp, port);
+		new ChatRoomUI("zhou",socket1);
 
-    private MessageThread messageThread;// 负责接收消息的线程
+	}
 
-    private Map<String, User> onLineUsers = new HashMap<String, User>();// 所有在线用户
+ 
 
+	// 执行发送
 
+	public void send() {
 
-    // 主方法,程序入口
+		if (!isConnected) {
 
-    public static void main(String[] args) throws UnknownHostException, IOException {
-        int port=6666;
-        String hostIp="127.0.0.1";
-        Socket socket1 = new Socket(hostIp, port);
-        new ChatRoomUI("zhou",socket1);
+			JOptionPane.showMessageDialog(frame, "还没有连接服务器，无法发送消息！", "错误",
 
-    }
+					JOptionPane.ERROR_MESSAGE);
 
+			return;
 
+		}
 
-    // 执行发送
+		String message = textField.getText().trim();
 
-    public void send() {
+		if (message == null || message.equals("")) {
 
-        if (!isConnected) {
+			JOptionPane.showMessageDialog(frame, "消息不能为空！", "错误",
 
-            JOptionPane.showMessageDialog(frame, "还没有连接服务器，无法发送消息！", "错误",
+					JOptionPane.ERROR_MESSAGE);
 
-                    JOptionPane.ERROR_MESSAGE);
+			return;
 
-            return;
+		}
 
-        }
+		sendMessage(frame.getTitle() + "@" + "ALL" + "@" + message);
 
-        String message = textField.getText().trim();
+		textField.setText(null);
 
-        if (message == null || message.equals("")) {
+	}
 
-            JOptionPane.showMessageDialog(frame, "消息不能为空！", "错误",
+ 
 
-                    JOptionPane.ERROR_MESSAGE);
+	// 构造方法
 
-            return;
+	public ChatRoomUI(String user_id,Socket socket) throws IOException {
+		
+		this.user_id=user_id;
+		
+		this.socket=socket;
+		
+		textArea = new JTextArea();
 
-        }
+		textArea.setEditable(false);
 
-        sendMessage(frame.getTitle() + "@" + "ALL" + "@" + message);
+		textArea.setForeground(Color.black);
 
-        textField.setText(null);
+		textField = new JTextField();
+		
 
-    }
+		//txt_port = new JTextField("6666");
 
+		//txt_hostIp = new JTextField("127.0.0.1");
 
+		//txt_name = new JTextField("xiaoqiang");
 
-    // 构造方法
+		btn_start = new JButton("连接");
 
-    public ChatRoomUI(String user_id, Socket socket) throws IOException {
+		btn_stop = new JButton("断开");
 
-        this.user_id=user_id;
+		btn_send = new JButton("发送");
 
-        this.socket=socket;
+		listModel = new DefaultListModel();
 
-        textArea = new JTextArea();
+		userList = new JList(listModel);
 
-        textArea.setEditable(false);
+ 
 
-        textArea.setForeground(Color.black);
+		northPanel = new JPanel();
 
-        textField = new JTextField();
+		northPanel.setLayout(new GridLayout(1, 7));
 
+		northPanel.add(new JLabel("用户："+user_id));
 
-        //txt_port = new JTextField("6666");
+		//northPanel.add(txt_port);
 
-        //txt_hostIp = new JTextField("127.0.0.1");
+		//northPanel.add(new JLabel("服务器IP"));
 
-        //txt_name = new JTextField("xiaoqiang");
+		//northPanel.add(txt_hostIp);
 
-        btn_start = new JButton("连接");
+		//northPanel.add(new JLabel("姓名"));
 
-        btn_stop = new JButton("断开");
+		//northPanel.add(txt_name);
 
-        btn_send = new JButton("发送");
+		northPanel.add(btn_start);
 
-        listModel = new DefaultListModel();
+		northPanel.add(btn_stop);
 
-        userList = new JList(listModel);
+		northPanel.setBorder(new TitledBorder("连接信息"));
 
+ 
 
+		rightScroll = new JScrollPane(textArea);
 
-        northPanel = new JPanel();
+		rightScroll.setBorder(new TitledBorder("消息显示区"));
 
-        northPanel.setLayout(new GridLayout(1, 7));
+		leftScroll = new JScrollPane(userList);
 
-        northPanel.add(new JLabel("用户："+user_id));
+		leftScroll.setBorder(new TitledBorder("在线用户"));
 
-        //northPanel.add(txt_port);
+		southPanel = new JPanel(new BorderLayout());
 
-        //northPanel.add(new JLabel("服务器IP"));
+		southPanel.add(textField, "Center");
 
-        //northPanel.add(txt_hostIp);
+		southPanel.add(btn_send, "East");
 
-        //northPanel.add(new JLabel("姓名"));
+		southPanel.setBorder(new TitledBorder("写消息"));
 
-        //northPanel.add(txt_name);
+ 
 
-        northPanel.add(btn_start);
+		centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll,
 
-        northPanel.add(btn_stop);
+				rightScroll);
 
-        northPanel.setBorder(new TitledBorder("连接信息"));
+		centerSplit.setDividerLocation(100);
 
+ 
 
+		frame = new JFrame("客户机");
 
-        rightScroll = new JScrollPane(textArea);
+		// 更改JFrame的图标：
 
-        rightScroll.setBorder(new TitledBorder("消息显示区"));
+		//frame.setIconImage(Toolkit.getDefaultToolkit().createImage(Client.class.getResource("qq.png")));
 
-        leftScroll = new JScrollPane(userList);
+		frame.setLayout(new BorderLayout());
 
-        leftScroll.setBorder(new TitledBorder("在线用户"));
+		frame.add(northPanel, "North");
 
-        southPanel = new JPanel(new BorderLayout());
+		frame.add(centerSplit, "Center");
 
-        southPanel.add(textField, "Center");
+		frame.add(southPanel, "South");
 
-        southPanel.add(btn_send, "East");
+		frame.setSize(600, 400);
 
-        southPanel.setBorder(new TitledBorder("写消息"));
+		int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
 
+		int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
 
+		frame.setLocation((screen_width - frame.getWidth()) / 2,
 
-        centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll,
+				(screen_height - frame.getHeight()) / 2);
 
-                rightScroll);
+		frame.setVisible(true);
 
-        centerSplit.setDividerLocation(100);
+		writer = new PrintWriter(socket.getOutputStream());
 
+		reader = new BufferedReader(new InputStreamReader(socket
 
+				.getInputStream()));
 
-        frame = new JFrame("客户机");
+		// 发送客户端用户基本信息(用户名和ip地址)
 
-        // 更改JFrame的图标：
+		sendMessage(user_id + "@" + socket.getLocalAddress().toString());
 
-        //frame.setIconImage(Toolkit.getDefaultToolkit().createImage(Client.class.getResource("qq.png")));
+		// 开启接收消息的线程
 
-        frame.setLayout(new BorderLayout());
+		messageThread = new MessageThread(reader, textArea);
 
-        frame.add(northPanel, "North");
+		messageThread.start();
 
-        frame.add(centerSplit, "Center");
+		isConnected = true;// 已经连接上了
+ 
 
-        frame.add(southPanel, "South");
+		// 写消息的文本框中按回车键时事件
 
-        frame.setSize(600, 400);
+		textField.addActionListener(new ActionListener() {
 
-        int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
+			public void actionPerformed(ActionEvent arg0) {
 
-        int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
+				send();
 
-        frame.setLocation((screen_width - frame.getWidth()) / 2,
+			}
 
-                (screen_height - frame.getHeight()) / 2);
+		});
 
-        frame.setVisible(true);
+ 
 
-        writer = new PrintWriter(socket.getOutputStream());
+		// 单击发送按钮时事件
 
-        reader = new BufferedReader(new InputStreamReader(socket
+		btn_send.addActionListener(new ActionListener() {
 
-                .getInputStream()));
+			public void actionPerformed(ActionEvent e) {
 
-        // 发送客户端用户基本信息(用户名和ip地址)
+				send();
 
-        sendMessage(user_id + "@" + socket.getLocalAddress().toString());
+			}
 
-        // 开启接收消息的线程
+		});
 
-        messageThread = new MessageThread(reader, textArea);
+ 
 
-        messageThread.start();
-
-        isConnected = true;// 已经连接上了
-
-
-        // 写消息的文本框中按回车键时事件
-
-        textField.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent arg0) {
-
-                send();
-
-            }
-
-        });
-
-
-
-        // 单击发送按钮时事件
-
-        btn_send.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                send();
-
-            }
-
-        });
-
-
-
-        // 单击连接按钮时事件
+		// 单击连接按钮时事件
 
 		/*btn_start.addActionListener(new ActionListener() {
 
@@ -386,13 +387,13 @@ public class ChatRoomUI {
 
 		});*/
 
+ 
 
+		// 单击断开按钮时事件
 
-        // 单击断开按钮时事件
+		btn_stop.addActionListener(new ActionListener() {
 
-        btn_stop.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 
 				/*if (!isConnected) {
 
@@ -421,61 +422,61 @@ public class ChatRoomUI {
 					JOptionPane.showMessageDialog(frame, exc.getMessage(),
 
 							"错误", JOptionPane.ERROR_MESSAGE);
-
+			
 
 				}*/
-                closeConnection();
+			closeConnection();
 
-            }
+			}
 
-        });
+		});
 
+ 
 
+		// 关闭窗口时事件
 
-        // 关闭窗口时事件
+		frame.addWindowListener(new WindowAdapter() {
 
-        frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
 
-            public void windowClosing(WindowEvent e) {
+				if (isConnected) {
 
-                if (isConnected) {
+					closeConnection();// 关闭连接
 
-                    closeConnection();// 关闭连接
+				}
 
-                }
+				System.exit(0);// 退出程序
 
-                System.exit(0);// 退出程序
+			}
 
-            }
+		});
+		 userList.addMouseListener(new MouseAdapter() //列表框添加鼠标事件
+			        {
+			            public void mousePressed(MouseEvent e) 
+			            {
+			                String user=(String)userList.getSelectedValue();
+			                System.out.println(user);
 
-        });
-        userList.addMouseListener(new MouseAdapter() //列表框添加鼠标事件
-        {
-            public void mousePressed(MouseEvent e)
-            {
-                String user=(String)userList.getSelectedValue();
-                System.out.println(user);
+			            }
+			        });
 
-            }
-        });
+	}
 
-    }
+ 
 
+	/**
 
+	 * 连接服务器
 
-    /**
+	 * 
 
-     * 连接服务器
+	 * @param port
 
-     *
+	 * @param hostIp
 
-     * @param port
+	 * @param name
 
-     * @param hostIp
-
-     * @param name
-
-     */
+	 */
 
 	/*public boolean connectServer(int port, String hostIp, String name) {
 
@@ -519,256 +520,255 @@ public class ChatRoomUI {
 
 	}*/
 
+ 
 
+	/**
 
-    /**
+	 * 发送消息
 
-     * 发送消息
+	 * 
 
-     *
+	 * @param message
 
-     * @param message
+	 */
 
-     */
+	public void sendMessage(String message) {
 
-    public void sendMessage(String message) {
+		writer.println(message);
 
-        writer.println(message);
+		writer.flush();
 
-        writer.flush();
+	}
 
-    }
+ 
 
+	/**
 
+	 * 客户端主动关闭连接
 
-    /**
+	 */
 
-     * 客户端主动关闭连接
+	@SuppressWarnings("deprecation")
 
-     */
+	public synchronized boolean closeConnection() {
 
-    @SuppressWarnings("deprecation")
+		try {
 
-    public synchronized boolean closeConnection() {
+			sendMessage("CLOSE");// 发送断开连接命令给服务器
 
-        try {
+			messageThread.stop();// 停止接受消息线程
+			listModel.removeAllElements();
+			// 释放资源
 
-            sendMessage("CLOSE");// 发送断开连接命令给服务器
+			if (reader != null) {
 
-            messageThread.stop();// 停止接受消息线程
-            listModel.removeAllElements();
-            // 释放资源
+				reader.close();
 
-            if (reader != null) {
+			}
 
-                reader.close();
+			if (writer != null) {
 
-            }
+				writer.close();
 
-            if (writer != null) {
+			}
 
-                writer.close();
+			if (socket != null) {
 
-            }
+				socket.close();
 
-            if (socket != null) {
+			}
 
-                socket.close();
+			isConnected = false;
+			frame.disable();
+			return true;
 
-            }
+		} catch (IOException e1) {
 
-            isConnected = false;
-            frame.disable();
-            return true;
+			e1.printStackTrace();
 
-        } catch (IOException e1) {
+			isConnected = true;
 
-            e1.printStackTrace();
+			return false;
 
-            isConnected = true;
+		}
 
-            return false;
+	}
 
-        }
+ 
 
-    }
+	// 不断接收消息的线程
 
+	class MessageThread extends Thread {
 
+		private BufferedReader reader;
 
-    // 不断接收消息的线程
+		private JTextArea textArea;
 
-    class MessageThread extends Thread {
+ 
 
-        private BufferedReader reader;
+		// 接收消息线程的构造方法
 
-        private JTextArea textArea;
+		public MessageThread(BufferedReader reader, JTextArea textArea) {
 
+			this.reader = reader;
 
+			this.textArea = textArea;
 
-        // 接收消息线程的构造方法
+		}
 
-        public MessageThread(BufferedReader reader, JTextArea textArea) {
+ 
 
-            this.reader = reader;
+		// 被动的关闭连接
 
-            this.textArea = textArea;
+		public synchronized void closeCon() throws Exception {
 
-        }
+			// 清空用户列表
 
+			listModel.removeAllElements();
 
+			// 被动的关闭连接释放资源
 
-        // 被动的关闭连接
+			if (reader != null) {
 
-        public synchronized void closeCon() throws Exception {
+				reader.close();
 
-            // 清空用户列表
+			}
 
-            listModel.removeAllElements();
+			if (writer != null) {
 
-            // 被动的关闭连接释放资源
+				writer.close();
 
-            if (reader != null) {
+			}
 
-                reader.close();
+			if (socket != null) {
 
-            }
+				socket.close();
 
-            if (writer != null) {
+			}
 
-                writer.close();
+			isConnected = false;// 修改状态为断开
 
-            }
+		}
 
-            if (socket != null) {
+ 
 
-                socket.close();
+		public void run() {
 
-            }
+			String message = "";
 
-            isConnected = false;// 修改状态为断开
+			while (true) {
 
-        }
+				try {
 
+					message = reader.readLine();
 
+					StringTokenizer stringTokenizer = new StringTokenizer(
 
-        public void run() {
+							message, "/@");
 
-            String message = "";
+					String command = stringTokenizer.nextToken();// 命令
 
-            while (true) {
+					if (command.equals("CLOSE"))// 服务器已关闭命令
 
-                try {
+					{
 
-                    message = reader.readLine();
+						textArea.append("服务器已关闭!\r\n");
 
-                    StringTokenizer stringTokenizer = new StringTokenizer(
+						closeCon();// 被动的关闭连接
 
-                            message, "/@");
+						return;// 结束线程
 
-                    String command = stringTokenizer.nextToken();// 命令
+					} else if (command.equals("ADD")) {// 有用户上线更新在线列表
 
-                    if (command.equals("CLOSE"))// 服务器已关闭命令
+						String username = "";
 
-                    {
+						String userIp = "";
 
-                        textArea.append("服务器已关闭!\r\n");
+						if ((username = stringTokenizer.nextToken()) != null
 
-                        closeCon();// 被动的关闭连接
+								&& (userIp = stringTokenizer.nextToken()) != null) {
 
-                        return;// 结束线程
+							User user = new User(username, userIp);
 
-                    } else if (command.equals("ADD")) {// 有用户上线更新在线列表
+							onLineUsers.put(username, user);
 
-                        String username = "";
+							listModel.addElement(username);
 
-                        String userIp = "";
+						}
 
-                        if ((username = stringTokenizer.nextToken()) != null
+					} else if (command.equals("DELETE")) {// 有用户下线更新在线列表
 
-                                && (userIp = stringTokenizer.nextToken()) != null) {
+						String username = stringTokenizer.nextToken();
 
-                            User user = new User(username, userIp);
+						User user = (User) onLineUsers.get(username);
 
-                            onLineUsers.put(username, user);
+						onLineUsers.remove(user);
 
-                            listModel.addElement(username);
+						listModel.removeElement(username);
 
-                        }
+					} else if (command.equals("USERLIST")) {// 加载在线用户列表
 
-                    } else if (command.equals("DELETE")) {// 有用户下线更新在线列表
+						int size = Integer
 
-                        String username = stringTokenizer.nextToken();
+								.parseInt(stringTokenizer.nextToken());
 
-                        User user = (User) onLineUsers.get(username);
+						String username = null;
 
-                        onLineUsers.remove(user);
+						String userIp = null;
 
-                        listModel.removeElement(username);
+						for (int i = 0; i < size; i++) {
 
-                    } else if (command.equals("USERLIST")) {// 加载在线用户列表
+							username = stringTokenizer.nextToken();
 
-                        int size = Integer
+							userIp = stringTokenizer.nextToken();
 
-                                .parseInt(stringTokenizer.nextToken());
+							User user = new User(username, userIp);
 
-                        String username = null;
+							onLineUsers.put(username, user);
 
-                        String userIp = null;
+							listModel.addElement(username);
 
-                        for (int i = 0; i < size; i++) {
+						}
 
-                            username = stringTokenizer.nextToken();
+					} else if (command.equals("MAX")) {// 人数已达上限
 
-                            userIp = stringTokenizer.nextToken();
+						textArea.append(stringTokenizer.nextToken()
 
-                            User user = new User(username, userIp);
+								+ stringTokenizer.nextToken() + "\r\n");
 
-                            onLineUsers.put(username, user);
+						closeCon();// 被动的关闭连接
 
-                            listModel.addElement(username);
+						JOptionPane.showMessageDialog(frame, "服务器缓冲区已满！", "错误",
 
-                        }
+								JOptionPane.ERROR_MESSAGE);
 
-                    } else if (command.equals("MAX")) {// 人数已达上限
+						return;// 结束线程
 
-                        textArea.append(stringTokenizer.nextToken()
+					} else {// 普通消息
+						String []result=message.split("说：");
+						String name=result[0];
+						if(name.equals(frame.getTitle())){
+							textArea.append("--"+message+"\r\n");
+						}
+						else {
+						textArea.append(message + "\r\n");
+						}
+					}
 
-                                + stringTokenizer.nextToken() + "\r\n");
+				} catch (IOException e) {
 
-                        closeCon();// 被动的关闭连接
+					e.printStackTrace();
 
-                        JOptionPane.showMessageDialog(frame, "服务器缓冲区已满！", "错误",
+				} catch (Exception e) {
 
-                                JOptionPane.ERROR_MESSAGE);
+					e.printStackTrace();
 
-                        return;// 结束线程
+				}
 
-                    } else {// 普通消息
-                        String []result=message.split("说：");
-                        String name=result[0];
-                        if(name.equals(frame.getTitle())){
-                            textArea.append("--"+message+"\r\n");
-                        }
-                        else {
-                            textArea.append(message + "\r\n");
-                        }
-                    }
+			}
 
-                } catch (IOException e) {
+		}
 
-                    e.printStackTrace();
-
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-
-                }
-
-            }
-
-        }
-
-    }
+	}
 
 }
-
