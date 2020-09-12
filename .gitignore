@@ -1,6 +1,6 @@
 .DS_Store
+*.iml
 res/.DS_Store
 src/.DS_Store
 out/
 .idea/
-*.iml
