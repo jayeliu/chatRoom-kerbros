@@ -45,15 +45,14 @@ class ConfirmButtonListener implements ActionListener {
                 new LoginUI().showUI(jtf1.getText());
             }else {
                 JOptionPane.showMessageDialog(null, "注册失败");
-                jtf1.setText("");
-                jtf2.setText("");
-                jtf3.setText("");
+                jtf2.setText(null);
+                jtf3.setText(null);
             }
         }
         else{
             JOptionPane.showMessageDialog(null, "两次输入的密码不一致，请重新输入！");
-            jtf1.setText(null);
             jtf2.setText(null);
+            jtf3.setText(null);
         }
     }
 
