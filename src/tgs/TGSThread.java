@@ -53,7 +53,8 @@ class TGSThread implements Runnable{
                     //生成时间戳
                     String data = Handledata.gettime();
                     System.out.println("\n\n\n"+k_cv        );
-                    TicketV ticketV = new TicketV(k_cv, "hellov", ticketTGS.getIdc(), ticketTGS.getAdc(), id_v, data, lifetime);
+                    //TicketV ticketV = new TicketV(k_cv, "hellov", ticketTGS.getIdc(), ticketTGS.getAdc(), id_v, data, lifetime);
+                    TicketV ticketV = new TicketV(k_cv, Handledata.Get_Idc(id_v), ticketTGS.getIdc(), ticketTGS.getAdc(), id_v, data, lifetime);
                     //生成TGS返回给client的报文
                     //System.out.println(TGS.Message.Message4(id_v, ticketV, ticketTGS.getKc_tgs(), ticketV.getKc_v()));
                     write.writeObject(Message.Message4(id_v, ticketV, ticketTGS.getKc_tgs(), ticketV.getKc_v()));//发送
