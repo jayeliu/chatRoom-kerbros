@@ -137,14 +137,14 @@ public class DES {
 		for(int i=0;i<P.length;i++) {
 			ans+=temp.charAt(P[i]-1);
 		}
-		return ans;} //³õÊ¼ÖÃ»»ÓÃP
+		return ans;} //åˆå§‹ç½®æ¢ç”¨P
 	public static String Ip1(String temp) {
 		String ans="";
 		for(int i=0;i<P1.length;i++) {
 			ans+=temp.charAt(P1[i]-1);
 		}
 		return ans;
-		}//Äæ³õÊ¼ÖÃ»»ÓÃP1
+		}//é€†åˆå§‹ç½®æ¢ç”¨P1
 	public static String expand(String right) {
 		String ans="";
 		for(int i=0;i<right.length()/4;i++) {
@@ -152,7 +152,7 @@ public class DES {
 			ans+=right.substring(i*4, i*4+4);
 			ans+=right.charAt((i*4+4)%right.length());
 		}
-		return ans;}//À©³äÖÃ»»£¨right£©
+		return ans;}//æ‰©å……ç½®æ¢ï¼ˆrightï¼‰
 	public static String xor(String x1,String x2) {
 		if(x1.length()!=x2.length()) {
 			return null;
@@ -165,7 +165,7 @@ public class DES {
 				ans+="0";
 			}
 		}
-		return ans;}//Òì»ò²Ù×÷
+		return ans;}//å¼‚æˆ–æ“ä½œ
 	public static String choose(String temp) {
 		String ans="";
 		for(int i=0;i<temp.length()/6;i++) {
@@ -185,32 +185,32 @@ public class DES {
 			}
 			
 		}
-		return ans;}////SºÐÑ¡Ôñ£¨48Î»½ø 32Î»³ö£©
+		return ans;}////Sç›’é€‰æ‹©ï¼ˆ48ä½è¿› 32ä½å‡ºï¼‰
 	public static String p(String temp) {
 		String ans="";
 		for(int i=0;i<temp.length();i++) {
 			ans+=temp.charAt(p[i]-1);
 		}
-		return ans;}//SºÐÑ¡ÔñºóÖÃ»» ÓÃp
+		return ans;}//Sç›’é€‰æ‹©åŽç½®æ¢ ç”¨p
 	public static String rotate(String temp,int i) {
 		int count=round[i];
 		String ans="";
 		for(int j=0;j<temp.length();j++) {
 			ans+=temp.charAt((j+count)%temp.length());
 		}
-		return ans;}//ÃÜÔ¿ÂÖ×ª ÓÃround
+		return ans;}//å¯†é’¥è½®è½¬ ç”¨round
 	public static String ip1(String temp) {
 		String ans="";
 		for(int i=0;i<pc1.length;i++) {
 			ans+=temp.charAt(pc1[i]-1);
 		}
-		return ans;}//ÓÃÓÚÃÜÔ¿³õÊ¼ÖÃ»»
+		return ans;}//ç”¨äºŽå¯†é’¥åˆå§‹ç½®æ¢
 	public static String ip2(String temp) {
 		String ans="";
 		for(int i=0;i<pc2.length;i++) {
 			ans+=temp.charAt(pc2[i]-1);
 		}
-		return ans;}//ÓÃÓÚÃÜÔ¿ÂÖ×ªºóÖÃ»»
+		return ans;}//ç”¨äºŽå¯†é’¥è½®è½¬åŽç½®æ¢
 	static byte[] string2bytes(String input) { 
 		StringBuilder in = new StringBuilder(input); 
 		int remainder = in.length() % 8; 
