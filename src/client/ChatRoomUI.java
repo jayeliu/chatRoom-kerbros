@@ -176,7 +176,7 @@ public class ChatRoomUI{
 	// 构造方法
 
 	public ChatRoomUI(String user_id,String key,Socket socket,PrintWriter writer,BufferedReader reader) throws Exception {
-		org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
+		//org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
 		this.user_id=user_id;
 		
 		this.socket=socket;
