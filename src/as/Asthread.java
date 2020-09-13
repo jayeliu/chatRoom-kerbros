@@ -73,7 +73,7 @@ public class Asthread implements Runnable{
 				rs=pStmt.executeQuery();
 				rs.next();
 				int id=Integer.parseInt(rs.getString(1))+1;//计算出待注册用户在数据库的ID
-				sql="insert into User values(?,?,?,1);";
+				sql="insert into User values(?,?,?,0);";
 				pStmt = (PreparedStatement) conn.prepareStatement(sql);
 				pStmt.setString(1, String.valueOf(id));
 				pStmt.setString(2, user_id);
