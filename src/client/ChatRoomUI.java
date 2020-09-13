@@ -123,7 +123,8 @@ public class ChatRoomUI{
 
 	// 主方法,程序入口
 
-	public static void main(String[] args) throws UnknownHostException, IOException, NoSuchAlgorithmException {
+	public static void main(String[] args) throws Exception {
+
 		int port=6666;
 		String hostIp="127.0.0.1";
 		Socket socket1 = new Socket(hostIp, port);
@@ -174,8 +175,8 @@ public class ChatRoomUI{
 
 	// 构造方法
 
-	public ChatRoomUI(String user_id,String key,Socket socket,PrintWriter writer,BufferedReader reader) throws IOException, NoSuchAlgorithmException {
-		
+	public ChatRoomUI(String user_id,String key,Socket socket,PrintWriter writer,BufferedReader reader) throws Exception {
+		org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
 		this.user_id=user_id;
 		
 		this.socket=socket;

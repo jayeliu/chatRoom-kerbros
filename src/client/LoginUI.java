@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 
 //判断账号密码是否正确——正确显示“登陆成功”，不正确显示“登录失败”
 class LoginButtonListener implements ActionListener {
+    public JFrame jf;
     public JButton jb1;
     public JButton jb2;
     public JTextField jtf1;
@@ -52,6 +53,7 @@ class LoginButtonListener implements ActionListener {
                         if( retu.error == null){ //认证成功开始进入聊天UI
                             jb2.setVisible(true);
                             jb1.setText("已登录");
+                            jf.dispose();
                             //this.setVisible(false);
                             //new ChatRoomUI(idc,account);
                             new ChatRoomUI(account,retu.getCvkey(),retu.getSock(),retu.getPw(),retu.getBr());
@@ -85,7 +87,8 @@ class LoginButtonListener implements ActionListener {
 
     //将界面中文本框的值传入事件监听器中
     //(a)构造方法，参数为文本框内容
-    public LoginButtonListener(JButton jb1,JButton jb2,JTextField jtf1,JPasswordField jtf2){
+    public LoginButtonListener(JFrame jf,JButton jb1,JButton jb2,JTextField jtf1,JPasswordField jtf2){
+        this.jf = jf;
         this.jb1 = jb1;
         this.jb2 = jb2;
         this.jtf1 = jtf1;
@@ -175,7 +178,7 @@ public class LoginUI{
         jf.add(jb2);
 
         //登陆按钮绑定事件
-        LoginButtonListener lbl = new LoginButtonListener(jb1,jb2,jt1,jt2);
+        LoginButtonListener lbl = new LoginButtonListener(jf,jb1,jb2,jt1,jt2);
         jb1.addActionListener(lbl);
         //注册按钮绑定事件j
         RegistButtonListener rbl = new RegistButtonListener(jf);
@@ -185,7 +188,8 @@ public class LoginUI{
         jf.setVisible(true);
     }
 
-    public static void main(String args[]){
+    public static void main(String args[]) throws Exception {
+
         LoginUI tf = new LoginUI();
         tf.showUI("");
     }
