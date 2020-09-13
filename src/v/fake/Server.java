@@ -1,5 +1,6 @@
 package v.fake;
 
+import ChatUI.Client;
 import ChatUI.User;
 import DES.DES;
 
@@ -10,16 +11,16 @@ import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server {
     static int max=30;
     int port=4444;
     String k_v = "hellov";
-    String k_c_v;
     private ServerSocket serverSocket;
     private ServerThread serverThread;
 
-    private ArrayList<ClientThread> clients;
+    private CopyOnWriteArrayList<ClientThread> clients;
     public static void main(String[]args) throws BindException {
         Server server=new Server();
         server.ServerStart();
@@ -28,7 +29,7 @@ public class Server {
     public void ServerStart() throws BindException {
         System.out.println("聊天服务启动");
         try {
-            clients = new ArrayList<ClientThread>();
+            clients = new CopyOnWriteArrayList<>();
             serverSocket = new ServerSocket(port);
             serverThread = new ServerThread(serverSocket);
             serverThread.start();
@@ -91,11 +92,10 @@ public class Server {
                         // 接收客户端的基本用户信息
 
                         String inf = r.readLine();
-                        inf = DES.DES_Decryp(inf, k_c_v);
                         StringTokenizer st = new StringTokenizer(inf, "@");
                         User user = new User(st.nextToken(), st.nextToken());
                         // 反馈连接成功信息
-                        w.println(DES.DES("MAX@服务器：对不起，" + user.getName() +" "+ user.getIp() + "，服务器在线人数已达上限，请稍后尝试连接！",k_c_v));
+                        w.println("MAX@服务器：对不起，" + user.getName() +" "+ user.getIp() + "，服务器在线人数已达上限，请稍后尝试连接！");
                         w.flush();
                         // 释放资源
                         r.close();
@@ -109,7 +109,7 @@ public class Server {
                     clients.add(client);
                     System.out.println("当前用户数量："+clients.size());
 
-                } catch (IOException | NoSuchAlgorithmException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                     CloseServer();
                 }
@@ -127,7 +127,7 @@ public class Server {
         private BufferedReader reader;
         private PrintWriter writer;
         private User user;
-
+        private String k_c_v;
         public BufferedReader getReader() {
             return reader;
         }
@@ -178,7 +178,12 @@ public class Server {
                     for (String s : auths) {
                         System.out.println(s);
                     }
-                    //
+                    for (ClientThread client:clients){
+                        if(client.getUser().getName().equals(auths[0])){
+                            writer.write("12\n");
+                            writer.flush();
+                        }
+                    }
                     long tsp=Long.parseLong(auths[2])+1;
                     String data1=String.join(",","11",DES.DES(String.valueOf(tsp),k_c_v))+"\n";
                     System.out.println(data1);
@@ -191,7 +196,7 @@ public class Server {
                 // 接收客户端的基本用户信息
                 String inf = reader.readLine();
                 inf = DES.DES_Decryp(inf, k_c_v);
-                System.out.println(inf);
+                System.out.println("inf:"+inf);
                 StringTokenizer st = new StringTokenizer(inf, "@");
                 user = new User(st.nextToken(), st.nextToken());
                 // 反馈连接成功信息
@@ -213,7 +218,7 @@ public class Server {
                 // 向所有在线用户发送该用户上线命令
                 for (int i = clients.size() - 1; i >= 0; i--) {
                     clients.get(i).getWriter().println(DES.DES(
-                            "ADD@" + user.getName() + user.getIp(),k_c_v));
+                            "ADD@" + user.getName() + user.getIp(),clients.get(i).k_c_v));
                     clients.get(i).getWriter().flush();
                 }
             } catch (IOException | NoSuchAlgorithmException e) {
@@ -230,7 +235,7 @@ public class Server {
                 try {
                     message = reader.readLine();// 接收客户端消息
                     message = DES.DES_Decryp(message, k_c_v);
-                    System.out.println(message);
+                    System.out.println("message:"+message);
                     if (message.equals("CLOSE"))// 下线命令
                     {
                         // 断开连接释放资源
@@ -242,7 +247,7 @@ public class Server {
                         // 向所有在线用户发送该用户的下线命令
                         for (int i = clients.size() - 1; i >= 0; i--) {
                             clients.get(i).getWriter().println(DES.DES(
-                                    "DELETE@" + user.getName(),k_c_v));
+                                    "DELETE@" + user.getName(),clients.get(i).k_c_v));
                             clients.get(i).getWriter().flush();
                         }
 
@@ -300,7 +305,7 @@ public class Server {
 
                 if (clients.get(i).getUser().getName().equals(friend)) {
 
-                    clients.get(i).getWriter().println(DES.DES(message, k_c_v));
+                    clients.get(i).getWriter().println(DES.DES(message, clients.get(i).k_c_v));
 
                     clients.get(i).getWriter().flush();
 
@@ -317,10 +322,10 @@ public class Server {
             String source = stringTokenizer.nextToken();
             String owner = stringTokenizer.nextToken();
             String content = stringTokenizer.nextToken();
-            message = source + " ：" + content;
+            message = source + " 说：" + content;
             if (owner.equals("ALL")) {// 群发
                 for (int i = clients.size() - 1; i >= 0; i--) {
-                    clients.get(i).getWriter().println(DES.DES(message,k_c_v));
+                    clients.get(i).getWriter().println(DES.DES(message,clients.get(i).k_c_v));
                     clients.get(i).getWriter().flush();
                 }
             }

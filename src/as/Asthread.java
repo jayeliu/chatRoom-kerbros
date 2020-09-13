@@ -9,10 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Base64;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
 import DES.DES;
+import RSA.RSA;
 
 public class Asthread implements Runnable{
 	String regist="1";//注册包首部
@@ -31,6 +32,7 @@ public class Asthread implements Runnable{
 			ObjectOutputStream write = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream read = new ObjectInputStream(socket.getInputStream());
 			String data=(String)read.readObject();//AS从客户端接收到的数据包
+
 			System.out.println("c->AS:"+data);
 			String[] result=data.split(",");
 			if(result.length!=4) {
@@ -39,9 +41,6 @@ public class Asthread implements Runnable{
 				return;
 			}
 			String type=result[0];//截取数据包类型
-			String user=result[1];//user id
-			String IDTGS=result[2];//截取TGS id
-			String TS1=result[3];//时间戳
 		    /*String lenght=data.substring(5, 13);//截取有效数据包长度字符串
 		    int len=Handledata.getlenght(lenght);*/
 			ResultSet rs=null;
@@ -49,6 +48,13 @@ public class Asthread implements Runnable{
 			//String info=data.substring(13);//截取有效数据段
 			if(type.equals(regist))//AS注册处理
 			{
+				String prkey="282436519&518940563";
+				byte[] ans= RSA.decrypt(prkey, Base64.getDecoder().decode(result[1]));
+				String pack=new String(ans,"utf-8");
+				result=pack.split(",");
+				String user=result[0];//user id
+				String IDTGS=result[1];//截取TGS id
+				String TS1=result[2];//时间戳
 				String user_id=user.split("&")[0];
 				String user_password=user.split("&")[1];
 				lock.lock();
@@ -84,6 +90,9 @@ public class Asthread implements Runnable{
 			if(type.equals(login))//AS登录处理
 			{
 
+				String user=result[1];//user id
+				String IDTGS=result[2];//截取TGS id
+				String TS1=result[3];//时间戳
 				System.out.println("login user:"+user);
 				lock.lock();
 				conn=Handledata.conmyASsql();//连接数据库
