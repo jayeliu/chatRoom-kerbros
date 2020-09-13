@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server {
     public static void main(String[] args) throws IOException {
@@ -79,6 +80,7 @@ class Handler extends Thread {
             String data1=String.join(",","11",DES.DES(String.valueOf(tsp),k_c_v));
             System.out.println(data1);
             output.writeUTF(data1);
+            //开启聊天
         }else {
             output.writeObject("12");
             output.flush();

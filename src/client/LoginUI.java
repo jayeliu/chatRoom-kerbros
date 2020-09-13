@@ -54,7 +54,7 @@ class LoginButtonListener implements ActionListener {
                             jb1.setText("已登录");
                             //this.setVisible(false);
                             //new ChatRoomUI(idc,account);
-                            new ChatRoomUI(account,retu.getSock());
+                            new ChatRoomUI(account,retu.getCvkey(),retu.getSock(),retu.getPw(),retu.getBr());
                         } else {
                             JOptionPane.showMessageDialog(null, retu);//认证失败重新登录
                             jb2.setVisible(true);

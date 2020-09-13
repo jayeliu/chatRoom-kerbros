@@ -1,8 +1,6 @@
 package client;
 
 
-import ChatUI.User;
-
 import java.awt.BorderLayout;
 
 import java.awt.Color;
@@ -30,6 +28,7 @@ import java.io.PrintWriter;
 
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import java.util.Map;
@@ -61,6 +60,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import javax.swing.border.TitledBorder;
+
+import ChatUI.User;
+import DES.DES;
 
  
 
@@ -117,15 +119,15 @@ public class ChatRoomUI{
 
 	private Map<String, User> onLineUsers = new HashMap<String, User>();// 所有在线用户
 
- 
+	private String key; //c_v 密钥
 
 	// 主方法,程序入口
 
-	public static void main(String[] args) throws UnknownHostException, IOException {
+	public static void main(String[] args) throws UnknownHostException, IOException, NoSuchAlgorithmException {
 		int port=6666;
 		String hostIp="127.0.0.1";
 		Socket socket1 = new Socket(hostIp, port);
-		new ChatRoomUI("zhou",socket1);
+		//new ChatRoomUI("ren",socket1,"hellov");
 
 	}
 
@@ -133,7 +135,7 @@ public class ChatRoomUI{
 
 	// 执行发送
 
-	public void send() {
+	public void send() throws NoSuchAlgorithmException {
 
 		if (!isConnected) {
 
@@ -145,7 +147,7 @@ public class ChatRoomUI{
 
 		}
 
-		String message = textField.getText().trim();
+		String message = textField.getText();
 
 		if (message == null || message.equals("")) {
 
@@ -156,9 +158,14 @@ public class ChatRoomUI{
 			return;
 
 		}
-
+		if(message.charAt(0)=='@') {
+			String[] result=message.split(" ");
+			String user=result[0].substring(1, result[0].length());
+			sendMessage(frame.getTitle() + "@" + "Private" + "@" + user+"@"+message.substring(user.length()+1,message.length()));
+			textArea.append("--"+frame.getTitle()+"说："+message.substring(user.length()+1,message.length())+"("+result[0]+")"+"\r\n");
+		}else {
 		sendMessage(frame.getTitle() + "@" + "ALL" + "@" + message);
-
+		}
 		textField.setText(null);
 
 	}
@@ -167,11 +174,13 @@ public class ChatRoomUI{
 
 	// 构造方法
 
-	public ChatRoomUI(String user_id,Socket socket) throws IOException {
+	public ChatRoomUI(String user_id,String key,Socket socket,PrintWriter writer,BufferedReader reader) throws IOException, NoSuchAlgorithmException {
 		
 		this.user_id=user_id;
 		
 		this.socket=socket;
+		
+		this.key=key;
 		
 		textArea = new JTextArea();
 
@@ -188,9 +197,9 @@ public class ChatRoomUI{
 
 		//txt_name = new JTextField("xiaoqiang");
 
-		btn_start = new JButton("连接");
+		//btn_start = new JButton("连接");
 
-		btn_stop = new JButton("断开");
+		btn_stop = new JButton("退出");
 
 		btn_send = new JButton("发送");
 
@@ -216,7 +225,7 @@ public class ChatRoomUI{
 
 		//northPanel.add(txt_name);
 
-		northPanel.add(btn_start);
+		//northPanel.add(btn_start);
 
 		northPanel.add(btn_stop);
 
@@ -273,14 +282,13 @@ public class ChatRoomUI{
 		frame.setLocation((screen_width - frame.getWidth()) / 2,
 
 				(screen_height - frame.getHeight()) / 2);
+		frame.setTitle(user_id);
 
 		frame.setVisible(true);
 
-		writer = new PrintWriter(socket.getOutputStream());
+		this.writer =writer;
 
-		reader = new BufferedReader(new InputStreamReader(socket
-
-				.getInputStream()));
+		this.reader = reader;
 
 		// 发送客户端用户基本信息(用户名和ip地址)
 
@@ -301,7 +309,12 @@ public class ChatRoomUI{
 
 			public void actionPerformed(ActionEvent arg0) {
 
-				send();
+				try {
+					send();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 			}
 
@@ -315,7 +328,12 @@ public class ChatRoomUI{
 
 			public void actionPerformed(ActionEvent e) {
 
-				send();
+				try {
+					send();
+				} catch (NoSuchAlgorithmException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 
 			}
 
@@ -425,7 +443,12 @@ public class ChatRoomUI{
 			
 
 				}*/
-			closeConnection();
+			try {
+				closeConnection();
+			} catch (NoSuchAlgorithmException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 			}
 
@@ -441,7 +464,12 @@ public class ChatRoomUI{
 
 				if (isConnected) {
 
-					closeConnection();// 关闭连接
+					try {
+						closeConnection();
+					} catch (NoSuchAlgorithmException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}// 关闭连接
 
 				}
 
@@ -454,8 +482,11 @@ public class ChatRoomUI{
 			        {
 			            public void mousePressed(MouseEvent e) 
 			            {
+			            	if(userList.getModel().getSize() == 0){
+			            		return;
+							}
 			                String user=(String)userList.getSelectedValue();
-			                System.out.println(user);
+			                textField.setText("@"+user+" ");
 
 			            }
 			        });
@@ -529,12 +560,13 @@ public class ChatRoomUI{
 	 * 
 
 	 * @param message
+	 * @throws NoSuchAlgorithmException 
 
 	 */
 
-	public void sendMessage(String message) {
+	public void sendMessage(String message) throws NoSuchAlgorithmException {
 
-		writer.println(message);
+		writer.println(DES.DES(message,key));
 
 		writer.flush();
 
@@ -545,12 +577,13 @@ public class ChatRoomUI{
 	/**
 
 	 * 客户端主动关闭连接
+	 * @throws NoSuchAlgorithmException 
 
 	 */
 
 	@SuppressWarnings("deprecation")
 
-	public synchronized boolean closeConnection() {
+	public synchronized boolean closeConnection() throws NoSuchAlgorithmException {
 
 		try {
 
@@ -579,7 +612,7 @@ public class ChatRoomUI{
 			}
 
 			isConnected = false;
-			frame.disable();
+			frame.dispose();
 			return true;
 
 		} catch (IOException e1) {
@@ -662,6 +695,8 @@ public class ChatRoomUI{
 
 					message = reader.readLine();
 
+					message=DES.DES_Decryp(message, key);
+					
 					StringTokenizer stringTokenizer = new StringTokenizer(
 
 							message, "/@");
