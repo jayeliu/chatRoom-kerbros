@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Base64;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,9 +47,7 @@ public class Asthread implements Runnable{
 			//String info=data.substring(13);//截取有效数据段
 			if(type.equals(regist))//AS注册处理
 			{
-				String prkey="282436519&518940563";
-				byte[] ans= RSA.decrypt(prkey, Base64.getDecoder().decode(result[1]));
-				String pack=new String(ans,"utf-8");
+				String pack= RSA.Decryp(result[1]);
 				result=pack.split(",");
 				String user=result[0];//user id
 				String IDTGS=result[1];//截取TGS id
