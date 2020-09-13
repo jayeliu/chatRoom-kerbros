@@ -34,11 +34,6 @@ public class Asthread implements Runnable{
 
 			System.out.println("c->AS:"+data);
 			String[] result=data.split(",");
-			if(result.length!=4) {
-				String fail="20";
-				write.writeObject(fail);
-				return;
-			}
 			String type=result[0];//截取数据包类型
 		    /*String lenght=data.substring(5, 13);//截取有效数据包长度字符串
 		    int len=Handledata.getlenght(lenght);*/
