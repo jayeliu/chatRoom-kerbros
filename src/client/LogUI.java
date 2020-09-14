@@ -1,6 +1,8 @@
 package client;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class LogUI {
     public JFrame jFrame;
@@ -10,6 +12,12 @@ public class LogUI {
         jFrame.setSize(600,400);
         textArea=new JTextArea();
         jFrame.add(textArea);
+        jFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);// 退出程序
+            }
+
+        });
         jFrame.setVisible(true);
     }
     public JTextArea getTextArea() {
